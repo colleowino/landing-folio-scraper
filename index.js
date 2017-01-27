@@ -8,8 +8,9 @@ var imgDownloader = function(url,callback){
 		 //do something
 		var $ = cheerio.load(body);
 		var src = $('.featured-image a img').attr('src');
+		var ext = path.extname(src).split('?')[0];
 		var title = path.basename(url);
-		flname = title+".jpg";
+		flname = title+ext;
 		
 		var dir = 'downloads';
 
