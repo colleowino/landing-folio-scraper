@@ -4,9 +4,9 @@
   "description": "scrape the images from landing folio",
   "main": "index.js",
   "dependencies": {
-    "async": "^2.1.4",
-    "cheerio": "^0.22.0",
-    "request": "^2.79.0"
+    "image-downloader": "^3.2.2",
+    "mkdirp": "^0.5.1",
+    "scrape-it": "^3.3.2"
   },
   "devDependencies": {},
   "scripts": {
@@ -17,11 +17,7 @@
     "url": "git+https://github.com/colleowino/lf-scraper.git"
   },
   "keywords": [
-    "scraper",
-    "path",
-    "fs",
-    "cheerio",
-    "request"
+    "web-scraper",
   ],
   "author": "colleowino <colleowino@gmail.com>",
   "license": "MIT",

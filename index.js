@@ -1,81 +1,77 @@
-var request = require('request');
-var cheerio = require('cheerio');
-var fs = require('fs');
-var path = require('path');
+const scrapeIt = require("scrape-it");
+const download = require('image-downloader');
+const mkdirp = require('mkdirp');
+const path = require('path');
 
-var imgDownloader = function(url,callback){
-	request(url, function(err,resp,body){
-		 //do something
-		var $ = cheerio.load(body);
-		var src = $('.featured-image a img').attr('src');
-		var ext = path.extname(src).split('?')[0];
-		var title = path.basename(url);
-		flname = title+ext;
-		
-		var dir = 'downloads';
+// var url = "https://www.lapa.ninja"
+var url = 'http://www.landingfolio.com';
+var pgNum = process.argv[2];
 
-		if (!fs.existsSync(dir)){
-				fs.mkdirSync(dir);
-		}
-
-		flname = path.join(dir,flname);
-
-		request(src).pipe(fs.createWriteStream(flname)).on('close',function(){
-			console.log('downloaded: '+title);
-			callback(); // only download next image when one completes
-		});
-
-	});
-};
-
-// scrape all links in the page
-function pgExtractor(pg, callback){
-	console.log("\nloading page: "+pg);
-	var baseurl = 'http://www.landingfolio.com/page/'+pg;
-
-	request(baseurl, function(err,resp, body){
-		if (err)	
-			console.log(err);
-
-		$ = cheerio.load(body);
-
-		var links = [];
-
-		$('.inner').each( function(){
-			var item_link = $(this).parent().attr('href');
-			if(item_link){
-				links.push(item_link);
-			}
-		});
-
-		function fetchImg(link){
-			if(link){
-				imgDownloader(link, function(){
-					return fetchImg(links.shift());
-				});
-			}else{
-				console.log("downloaded all images");
-				callback(pg); // proceed to next page on the list
-			}
-			
-		}
-		fetchImg(links.shift());
-
-	});
-
-}
-
-// navigate through pages 
-function loadPage(pageNum){
-	if(pageNum <= totalPages){
-		pgExtractor(pageNum, function(result){
-			loadPage(result+1);
-		});
-	}else{
-		console.log("\ndownloaded all the pages");
+// Promise interface
+function scrapeListPage(pgNum){
+	// first page loads when page num excluded
+	if(pgNum > 1){
+			url += /page/+pgNum;
 	}
+
+	scrapeIt(url, {
+			// fetch the screenshot pages
+			pagelinks: {
+				listItem: "div.col-md-4",
+				data: {
+					link: {
+						selector: 'a',
+						attr: "href"
+					}
+				}
+			}
+	}).then(page => {
+		var found = page.pagelinks;
+		for(var i = 0; i < found.length; i++){
+			screenPage = found[i].link;
+
+			if(screenPage != undefined){
+				scrapePostPage(screenPage);
+			}
+		}
+
+	});
+
 }
 
-console.log('downloading pages');
-var totalPages = 1;
-loadPage(1);
+function scrapePostPage(link){
+
+	scrapeIt(link, {
+		imageLink : {
+			selector: ".featured-image a img",
+			attr: "src"
+		},
+	}).then( res => {
+		linkname = link.split("/");
+		filename = linkname[linkname.length - 2] + ".jpg"
+		downloadImage(res.imageLink, filename);
+	});
+}
+
+function downloadImage(imglink,filename){
+	var folder = path.join(__dirname,"downloads", pgNum.toString());
+
+	mkdirp(folder,function(err){
+		if(err) console.error(err)
+		// else console.log("folder created: "+pgNum);
+	});
+
+	download.image({url: imglink, dest: path.join(folder,filename)})
+		.then(({ filename, image }) => {
+			//console.log('completed ', path.basename(filename))
+		}).catch((err) => {
+			throw err
+		})
+
+}
+
+//var img_test = "https://www.lapa.ninja/assets/images/Frederique-Matti.jpg" 
+//downloadImage(2, img_test);
+// var linkpage = "http://www.landingfolio.com/gallery/headline/"
+// scrapePostPage(linkpage);
+scrapeListPage(pgNum);
