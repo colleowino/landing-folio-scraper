@@ -42,13 +42,15 @@ function downloadImage(imglink, filename) {
 function scrapePostPage(link) {
   scrapeIt(link, {
     imageLink: {
-      selector: '.featured-image a img',
+      selector: '.featured-image .box img',
       attr: 'src',
     },
   }).then((res) => {
-    const linkname = link.split('/');
-    const filename = `${linkname[linkname.length - 2]}.jpg`;
-    downloadImage(res.imageLink, filename);
+    // const linkname = link.split('/');
+    // const filename = `${linkname[linkname.length - 2]}.jpg`;
+    // downloadImage(res.imageLink, filename);
+    logger.good(res.imageLink);
+    logger.say(link);
   });
 }
 
@@ -62,7 +64,7 @@ function scrapeListPage(pageNumber) {
   scrapeIt(url, {
   // fetch the screenshot pages
     pagelinks: {
-      listItem: 'div.col-md-4',
+      listItem: 'div.col-md-4 .box',
       data: {
         link: {
           selector: 'a',
@@ -72,13 +74,13 @@ function scrapeListPage(pageNumber) {
     },
   }).then((page) => {
     const found = page.pagelinks;
-    for (let i = 0; i < found.length; i += 1) {
-      const screenPage = found[i].link;
 
-      if (screenPage !== undefined) {
-        scrapePostPage(screenPage);
-      }
-    }
+    logger.say(`loading the page list: ${pageNumber}`);
+
+    found.map((linkElement) => {
+      scrapePostPage(linkElement.link);
+      return linkElement.link;
+    });
   });
 }
 
