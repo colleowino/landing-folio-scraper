@@ -2,26 +2,39 @@ const scrapeIt = require('scrape-it');
 const download = require('image-downloader');
 const mkdirp = require('mkdirp');
 const path = require('path');
+const chalk = require('chalk');
 
 let url = 'http://www.landingfolio.com';
 const pageToLoad = process.argv[2];
 
-function logger(text) {
-  logger(text);
-}
+// function logger(text) {
+//   console.log(text); // eslint-disable-line no-console
+// }
 
+const logger = {
+  good: function green(txt) {
+    console.log(chalk.green(txt)); // eslint-disable-line no-console
+  },
+  bad: function red(txt) {
+    console.log(chalk.red(txt)); // eslint-disable-line no-console
+  },
+  say: function yellow(txt) {
+    console.log(chalk.yellow(txt)); // eslint-disable-line no-console
+  },
+};
 function downloadImage(imglink, filename) {
   const folder = path.join(__dirname, 'downloads', pageToLoad.toString());
 
   mkdirp(folder, (err) => {
-    if (err) logger(err);
-    else logger.log(`folder created: ${pageToLoad}`);
+    if (err) logger.bad(err);
+    else logger.good(`folder created: ${pageToLoad}`);
   });
 
   download.image({ url: imglink, dest: path.join(folder, filename) })
     .then(({ newfilename }) => {
-      logger('completed ', path.basename(newfilename));
+      logger.good('completed ', path.basename(newfilename));
     }).catch((err) => {
+      logger.bad(err);
       throw err;
     });
 }
@@ -73,4 +86,10 @@ function scrapeListPage(pageNumber) {
 // downloadImage(2, img_test);
 // let linkpage = "http://www.landingfolio.com/gallery/headline/"
 // scrapePostPage(linkpage);
-scrapeListPage(pageToLoad);
+
+if (pageToLoad) {
+  scrapeListPage(pageToLoad);
+} else {
+  logger.bad('-------------------------------------------------');
+  logger.bad('please provide a page number from landing folio');
+}
