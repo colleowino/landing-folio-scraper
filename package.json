@@ -16,9 +16,7 @@
     "type": "git",
     "url": "git+https://github.com/colleowino/lf-scraper.git"
   },
-  "keywords": [
-    "web-scraper",
-  ],
+  "keywords": [],
   "author": "colleowino <colleowino@gmail.com>",
   "license": "MIT",
   "bugs": {
