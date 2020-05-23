@@ -1,5 +1,5 @@
 {
-  "name": "lf-scraper",
+  "name": "landing-folio-scraper",
   "version": "1.0.0",
   "description": "scrape the images from landing folio",
   "main": "src/index.js",
